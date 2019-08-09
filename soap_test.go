@@ -1,6 +1,7 @@
 package gosoap
 
 import (
+	"log"
 	"net/http"
 	"testing"
 )
@@ -77,15 +78,18 @@ var (
 )
 
 func TestClient_Call(t *testing.T) {
-	soap, err := SoapClient("http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl")
+	log.SetFlags(log.Lshortfile)
+	//	soap, err := SoapClient("http://localhost:8000/wsdl")
+
+	soap, err := SoapClient("http://h2h.ppdpp.id:9443/ppdppws/TL?wsdl")
 	if err != nil {
 		t.Errorf("error not expected: %s", err)
 	}
 
 	var res *Response
 
-	params["vatNumber"] = "6388047V"
-	params["countryCode"] = "IE"
+	params["kode"] = "TOD"
+	params["password"] = "told4ta19"
 	res, err = soap.Call("", params)
 	if err == nil {
 		t.Errorf("method is empty")
@@ -95,63 +99,98 @@ func TestClient_Call(t *testing.T) {
 		t.Errorf("body is empty")
 	}
 
-	res, err = soap.Call("checkVat", params)
+	res, err = soap.Call("login", params)
 	if err != nil {
 		t.Errorf("error in soap call: %s", err)
 	}
 
-	res.Unmarshal(&rv)
-	if rv.CountryCode != "IE" {
-		t.Errorf("error: %+v", rv)
+	type loginResponse struct {
+		Return string
 	}
 
-	soap, err = SoapClient("http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL")
-	if err != nil {
-		t.Errorf("error not expected: %s", err)
-	}
+	var v loginResponse
+	res.Unmarshal(&v)
+	log.Println(v)
 
-	res, err = soap.Call("CapitalCity", Params{"sCountryISOCode": "GB"})
-	if err != nil {
-		t.Errorf("error in soap call: %s", err)
-	}
+	/*
+		soap, err := SoapClient("http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl")
+		if err != nil {
+			t.Errorf("error not expected: %s", err)
+		}
 
-	res.Unmarshal(&rc)
+		var res *Response
 
-	if rc.CapitalCityResult != "London" {
-		t.Errorf("error: %+v", rc)
-	}
+		params["vatNumber"] = "6388047V"
+		params["countryCode"] = "IE"
+		res, err = soap.Call("", params)
+		if err == nil {
+			t.Errorf("method is empty")
+		}
 
-	soap, err = SoapClient("http://www.dataaccess.com/webservicesserver/numberconversion.wso?WSDL")
-	if err != nil {
-		t.Errorf("error not expected: %s", err)
-	}
+		if res != nil {
+			t.Errorf("body is empty")
+		}
 
-	res, err = soap.Call("NumberToWords", Params{"ubiNum": "23"})
-	if err != nil {
-		t.Errorf("error in soap call: %s", err)
-	}
+		res, err = soap.Call("checkVat", params)
+		if err != nil {
+			t.Errorf("error in soap call: %s", err)
+		}
 
-	res.Unmarshal(&rn)
+		res.Unmarshal(&rv)
+		if rv.CountryCode != "IE" {
+			t.Errorf("error: %+v", rv)
+		}
 
-	if rn.NumberToWordsResult != "twenty three " {
-		t.Errorf("error: %+v", rn)
-	}
+		soap, err = SoapClient("http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL")
+		if err != nil {
+			t.Errorf("error not expected: %s", err)
+		}
 
-	soap, err = SoapClient("https://domains.livedns.co.il/API/DomainsAPI.asmx?WSDL")
-	if err != nil {
-		t.Errorf("error not expected: %s", err)
-	}
+		res, err = soap.Call("CapitalCity", Params{"sCountryISOCode": "GB"})
+		if err != nil {
+			t.Errorf("error in soap call: %s", err)
+		}
 
-	res, err = soap.Call("Whois", Params{"DomainName": "google.com"})
-	if err != nil {
-		t.Errorf("error in soap call: %s", err)
-	}
+		res.Unmarshal(&rc)
 
-	res.Unmarshal(&rw)
+		if rc.CapitalCityResult != "London" {
+			t.Errorf("error: %+v", rc)
+		}
 
-	if rw.WhoisResult != "0" {
-		t.Errorf("error: %+v", rw)
-	}
+		soap, err = SoapClient("http://www.dataaccess.com/webservicesserver/numberconversion.wso?WSDL")
+		if err != nil {
+			t.Errorf("error not expected: %s", err)
+		}
+
+		res, err = soap.Call("NumberToWords", Params{"ubiNum": "23"})
+		if err != nil {
+			t.Errorf("error in soap call: %s", err)
+		}
+
+		res.Unmarshal(&rn)
+
+		if rn.NumberToWordsResult != "twenty three " {
+			t.Errorf("error: %+v", rn)
+		}
+	*/
+
+	/*
+		soap, err = SoapClient("https://domains.livedns.co.il/API/DomainsAPI.asmx?WSDL")
+		if err != nil {
+			t.Errorf("error not expected: %s", err)
+		}
+
+		res, err = soap.Call("Whois", Params{"DomainName": "google.com"})
+		if err != nil {
+			t.Errorf("error in soap call: %s", err)
+		}
+
+		res.Unmarshal(&rw)
+
+		if rw.WhoisResult != "0" {
+			t.Errorf("error: %+v", rw)
+		}
+	*/
 
 	c := &Client{}
 	res, err = c.Call("", Params{})

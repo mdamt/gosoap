@@ -2,11 +2,12 @@ package gosoap
 
 import (
 	"encoding/xml"
-	"golang.org/x/net/html/charset"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
+
+	"golang.org/x/net/html/charset"
 )
 
 type wsdlDefinitions struct {
@@ -185,6 +186,30 @@ func getWsdlDefinitions(u string) (wsdl *wsdlDefinitions, err error) {
 	decoder := xml.NewDecoder(reader)
 	decoder.CharsetReader = charset.NewReaderLabel
 	err = decoder.Decode(&wsdl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range wsdl.Types {
+		for j := range wsdl.Types[i].XsdSchema {
+			for k := range wsdl.Types[i].XsdSchema[j].Imports {
+				xsdReader, err := getWsdlBody(wsdl.Types[i].XsdSchema[j].Imports[k].SchemaLocation)
+				if err != nil {
+					return nil, err
+				}
+				defer xsdReader.Close()
+				xsdDecoder := xml.NewDecoder(xsdReader)
+				xsdDecoder.CharsetReader = charset.NewReaderLabel
+				var xsd xsdSchema
+				err = xsdDecoder.Decode(&xsd)
+				wsdl.Types[i].XsdSchema[j] = &xsd
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
 
 	return wsdl, err
 }

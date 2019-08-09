@@ -15,7 +15,8 @@ func (c process) MarshalXML(e *xml.Encoder, _ xml.StartElement) error {
 		return fmt.Errorf("definitions is nil")
 	}
 
-	tokens.startEnvelope()
+	tokens.startEnvelope(c.Client.Definitions.Types[0].XsdSchema[0].TargetNamespace)
+
 	if len(c.Client.HeaderParams) > 0 {
 		tokens.startHeader(c.Client.HeaderName, c.Client.Definitions.Types[0].XsdSchema[0].TargetNamespace)
 
@@ -76,7 +77,7 @@ func (tokens *tokenData) recursiveEncode(hm interface{}) {
 	}
 }
 
-func (tokens *tokenData) startEnvelope() {
+func (tokens *tokenData) startEnvelope(ns string) {
 	e := xml.StartElement{
 		Name: xml.Name{
 			Space: "",
@@ -86,6 +87,7 @@ func (tokens *tokenData) startEnvelope() {
 			{Name: xml.Name{Space: "", Local: "xmlns:xsi"}, Value: "http://www.w3.org/2001/XMLSchema-instance"},
 			{Name: xml.Name{Space: "", Local: "xmlns:xsd"}, Value: "http://www.w3.org/2001/XMLSchema"},
 			{Name: xml.Name{Space: "", Local: "xmlns:soap"}, Value: "http://schemas.xmlsoap.org/soap/envelope/"},
+			{Name: xml.Name{Space: "", Local: "xmlns:ws"}, Value: ns},
 		},
 	}
 
@@ -170,10 +172,10 @@ func (tokens *tokenData) startBody(m, n string) error {
 	r := xml.StartElement{
 		Name: xml.Name{
 			Space: "",
-			Local: m,
+			Local: "ws:" + m,
 		},
 		Attr: []xml.Attr{
-			{Name: xml.Name{Space: "", Local: "xmlns"}, Value: n},
+			//{Name: xml.Name{Space: "", Local: "xmlns"}, Value: n},
 		},
 	}
 
@@ -194,7 +196,7 @@ func (tokens *tokenData) endBody(m string) {
 	r := xml.EndElement{
 		Name: xml.Name{
 			Space: "",
-			Local: m,
+			Local: "ws:" + m,
 		},
 	}
 
